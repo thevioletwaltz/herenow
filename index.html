@@ -55,35 +55,52 @@
   </div>
 
   <script>
+  const firebaseConfig = {
     apiKey: "AIzaSy...",
     authDomain: "herenow.firebaseapp.com",
     projectId: "herenow",
     storageBucket: "herenow.appspot.com",
     messagingSenderId: "123456789",
     appId: "1:123456789:web:abcdef"
-    };
+  };
 
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore(app);
-    const docRef = db.collection("pages").doc("demo");
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const docRef = db.collection("pages").doc("demo");
 
-    document.getElementById("save").onclick = async () => {
+  const moodEl = document.getElementById("mood");
+  const musicEl = document.getElementById("music");
+  const gameEl = document.getElementById("game");
+  const workEl = document.getElementById("work");
+  const saveBtn = document.getElementById("save");
+  const liveEl = document.getElementById("live");
+
+  saveBtn.addEventListener("click", async () => {
+    console.log("Save clicked");
+    try {
       await docRef.set({
-        mood: mood.value,
-        music: music.value,
-        game: game.value,
-        work: work.value,
+        mood: moodEl.value,
+        music: musicEl.value,
+        game: gameEl.value,
+        work: workEl.value,
         updated: new Date()
       });
-    };
+      console.log("Saved!");
+      alert("Saved!");
+    } catch (err) {
+      console.error(err);
+      alert("Save failed: " + err.message);
+    }
+  });
 
-    docRef.onSnapshot(doc => {
-      const d = doc.data();
-      if (!d) return;
-      live.innerText =
-        `Mood: ${d.mood}\nMusic: ${d.music}\nGame: ${d.game}\nWorking on: ${d.work}`;
-    });
-  </script>
+  docRef.onSnapshot((doc) => {
+    const d = doc.data();
+    if (!d) return;
+    liveEl.innerText =
+      `Mood: ${d.mood}\nMusic: ${d.music}\nGame: ${d.game}\nWorking on: ${d.work}`;
+  });
+</script>
+
 
 </body>
 </html>
