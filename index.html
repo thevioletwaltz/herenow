@@ -57,60 +57,94 @@
 
   <script>
   const firebaseConfig = {
-    apiKey: "AIzaSyAJWypqDstozmXUVXbfhryept8blcvup8c",
-    authDomain: "herenowv2.firebaseapp.com",
-    projectId: "herenowv2",
-    storageBucket: "herenowv2.firebasestorage.app",
-    messagingSenderId: "991126883333",
-    appId: "1:991126883333:web:8fba2f2105167b7473e06c"
+    // your config stays here
   };
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
-  const docRef = db.collection("pages").doc("demo");
 
+  // ---------- URL-based page id ----------
+  const params = new URLSearchParams(window.location.search);
+  const uRaw = (params.get("u") || "demo").trim();
+  const u = uRaw.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32) || "demo";
+
+  // Optional edit key (secret)
+  const editKey = (params.get("edit") || "").trim();
+
+  // Each user gets their own doc
+  const docRef = db.collection("pages").doc(u);
+
+  // UI elements (adjust ids if yours differ)
   const moodEl = document.getElementById("mood");
   const musicEl = document.getElementById("music");
   const gameEl = document.getElementById("game");
   const workEl = document.getElementById("work");
-  const saveBtn = document.getElementById("save");
   const liveEl = document.getElementById("live");
+  const updatedEl = document.getElementById("updated");
+  const saveBtn = document.getElementById("save");
 
-  saveBtn.addEventListener("click", async () => {
-    console.log("Save clicked");
-    try {
-      await docRef.set({
-        mood: moodEl.value,
-        music: musicEl.value,
-        game: gameEl.value,
-        work: workEl.value,
-        updated: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      console.log("Saved!");
-      alert("Saved!");
-    } catch (err) {
-      console.error(err);
-      alert("Save failed: " + err.message);
-    }
-  });
+  // Helper: show current URLs
+  function showLinks(docData) {
+    const base = window.location.origin + window.location.pathname;
+    const viewURL = `${base}?u=${encodeURIComponent(u)}`;
+    const newEdit = docData?.editId || editKey || "";
+    const editURL = newEdit ? `${base}?u=${encodeURIComponent(u)}&edit=${encodeURIComponent(newEdit)}` : "";
 
-  docRef.onSnapshot((doc) => {
-  const d = doc.data();
-  if (!d) return;
-
-  liveEl.innerText =
-    `Mood: ${d.mood}\nMusic: ${d.music}\nGame: ${d.game}\nWorking on: ${d.work}`;
-
-  if (d.updated && d.updated.toDate) {
-    const dt = d.updated.toDate();
-    updated.innerText =
-      "Last updated: " + dt.toLocaleString([], {
-        dateStyle: "medium",
-        timeStyle: "short"
-      });
+    // optional: log for you (we can add UI later)
+    console.log("VIEW:", viewURL);
+    if (editURL) console.log("EDIT:", editURL);
   }
-});
 
+  // Save (only allowed if you have the edit key)
+  saveBtn.onclick = async () => {
+    // If doc doesn't exist yet, allow first save to "claim" it and generate editId
+    const snap = await docRef.get();
+    const existing = snap.exists ? snap.data() : null;
+
+    // If it exists and has an editId, require the correct key
+    if (existing?.editId && editKey !== existing.editId) {
+      alert("View-only link. You need the edit link to change this page.");
+      return;
+    }
+
+    // If this is the first time, generate an editId
+    const editIdToUse = existing?.editId || editKey || crypto.randomUUID();
+
+    await docRef.set({
+      mood: moodEl.value,
+      music: musicEl.value,
+      game: gameEl.value,
+      work: workEl.value,
+      editId: editIdToUse, // stored once, acts like password
+      updated: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    // If you didn't have an edit key in the URL, tell you the new edit link in console
+    showLinks({ editId: editIdToUse });
+  };
+
+  // Live updates
+  docRef.onSnapshot((doc) => {
+    const d = doc.data();
+    if (!d) {
+      liveEl.innerText = `No page yet for "${u}". Type and hit Save to create it.`;
+      updatedEl.innerText = "";
+      return;
+    }
+
+    liveEl.innerText =
+      `Mood: ${d.mood || ""}\nMusic: ${d.music || ""}\nGame: ${d.game || ""}\nWorking on: ${d.work || ""}`;
+
+    if (d.updated && d.updated.toDate) {
+      const dt = d.updated.toDate();
+      updatedEl.innerText =
+        "Last updated: " + dt.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+    } else {
+      updatedEl.innerText = "";
+    }
+
+    showLinks(d);
+  });
 </script>
 
 
