@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HereNow</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
+
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #111;
+      color: #eee;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+    }
+    input, textarea, button {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 0.6rem;
+      font-size: 1rem;
+    }
+    button {
+      cursor: pointer;
+    }
+    .card {
+      margin-top: 2rem;
+      padding: 1rem;
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>HereNow</h1>
+
+  <input id="mood" placeholder="Current mood" />
+  <input id="music" placeholder="Listening to" />
+  <input id="game" placeholder="Playing / watching" />
+  <textarea id="work" placeholder="Working on"></textarea>
+
+  <button id="save">Save</button>
+
+  <div class="card">
+    <h3>Live view</h3>
+    <p id="live"></p>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      // 🔴 PASTE YOUR FIREBASE CONFIG HERE
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(app);
+    const docRef = db.collection("pages").doc("demo");
+
+    document.getElementById("save").onclick = async () => {
+      await docRef.set({
+        mood: mood.value,
+        music: music.value,
+        game: game.value,
+        work: work.value,
+        updated: new Date()
+      });
+    };
+
+    docRef.onSnapshot(doc => {
+      const d = doc.data();
+      if (!d) return;
+      live.innerText =
+        `Mood: ${d.mood}\nMusic: ${d.music}\nGame: ${d.game}\nWorking on: ${d.work}`;
+    });
+  </script>
+
+</body>
+</html>
