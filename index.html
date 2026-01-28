@@ -89,6 +89,8 @@
 
   // Helper: show current URLs
   function showLinks(docData) {
+  if (!editLinkEl) return; // ← THIS LINE PREVENTS TOTAL FAILURE
+
   const base = window.location.origin + window.location.pathname;
   const viewURL = `${base}?u=${encodeURIComponent(u)}`;
   const newEdit = docData?.editId || editKey || "";
