@@ -5,41 +5,44 @@
   <title>HereNow</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Firebase -->
+  <!-- Firebase (compat so we can use firebase.initializeApp / firestore easily) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
   <style>
-  body {
-    font-family: system-ui, sans-serif;
-    background: #111;
-    color: #eee;
-    padding: 2rem;
-    max-width: 600px;
-    margin: auto;
-  }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #111;
+      color: #eee;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+    }
 
-  input, textarea, button {
-    width: 100%;
-    margin: 0.5rem 0;
-    padding: 0.6rem;
-    font-size: 1rem;
-    font-family: inherit; /* <-- add this */
-  }
+    input, textarea, button {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 0.6rem;
+      font-size: 1rem;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
 
-  button {
-    cursor: pointer;
-  }
+    button { cursor: pointer; }
 
-  .card {
-    margin-top: 2rem;
-    padding: 1rem;
-    border: 1px solid #333;
-  }
-</style>
+    .card {
+      margin-top: 2rem;
+      padding: 1rem;
+      border: 1px solid #333;
+    }
+
+    #editLink, #msg, #updated { font-size: 0.95rem; opacity: 0.8; }
+    #live { white-space: pre-line; }
+    a { color: #9ad; }
+  </style>
 </head>
-<body>
 
+<body>
   <h1>HereNow</h1>
 
   <input id="mood" placeholder="Current mood" />
@@ -47,127 +50,135 @@
   <input id="game" placeholder="Playing / watching" />
   <textarea id="work" placeholder="Working on"></textarea>
 
-<p id="editLink" style="font-size:0.9rem; opacity:0.7;"></p>
+  <button id="save">Save</button>
 
-<button id="save">Save</button>
-  
-<p id="msg" style="opacity:0.8; margin-top:0.75rem;"></p>
+  <p id="msg"></p>
+  <p id="editLink"></p>
 
   <div class="card">
-  <h3>Live view</h3>
-  <p id="updated" style="opacity:0.7; margin-top:0.5rem;"></p>
-  <p id="live"></p>
-</div>
+    <h3>Live view</h3>
+    <p id="updated"></p>
+    <p id="live"></p>
+  </div>
 
   <script>
-  window.addEventListener("DOMContentLoaded", () => {
-  const firebaseConfig = {
-  apiKey: "AIzaSy...",
-  authDomain: "herenow.firebaseapp.com",
-  projectId: "herenow",
-  storageBucket: "herenow.appspot.com",
-  messagingSenderId: "123456",
-  appId: "1:123:web:abc"
-};
+    window.addEventListener("DOMContentLoaded", () => {
+      // ---- Firebase config (KEEP YOUR REAL VALUES) ----
+      const firebaseConfig = {
+        apiKey: "AIzaSy...",
+        authDomain: "herenow.firebaseapp.com",
+        projectId: "herenow",
+        storageBucket: "herenow.appspot.com",
+        messagingSenderId: "123456",
+        appId: "1:123:web:abc"
+      };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+      // ---- Init ----
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
 
-  // ---------- URL-based page id ----------
-  const params = new URLSearchParams(window.location.search);
-  const uRaw = (params.get("u") || "demo").trim();
-  const u = uRaw.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32) || "demo";
+      // ---- Page identity from URL ----
+      const params = new URLSearchParams(window.location.search);
+      const uRaw = (params.get("u") || "demo").trim();
+      const u = uRaw.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32) || "demo";
+      const editKey = (params.get("edit") || "").trim();
 
-  // Optional edit key (secret)
-  const editKey = (params.get("edit") || "").trim();
+      const docRef = db.collection("pages").doc(u);
 
-  // Each user gets their own doc
-  const docRef = db.collection("pages").doc(u);
+      // ---- Elements ----
+      const moodEl = document.getElementById("mood");
+      const musicEl = document.getElementById("music");
+      const gameEl = document.getElementById("game");
+      const workEl = document.getElementById("work");
+      const saveBtn = document.getElementById("save");
 
-  // UI elements (adjust ids if yours differ)
-  const moodEl = document.getElementById("mood");
-  const musicEl = document.getElementById("music");
-  const gameEl = document.getElementById("game");
-  const workEl = document.getElementById("work");
-  const liveEl = document.getElementById("live");
-  const updatedEl = document.getElementById("updated");
-  const saveBtn = document.getElementById("save");
-  const editLinkEl = document.getElementById("editLink");
+      const msgEl = document.getElementById("msg");
+      const editLinkEl = document.getElementById("editLink");
+      const updatedEl = document.getElementById("updated");
+      const liveEl = document.getElementById("live");
 
+      msgEl.innerText = `Ready (page: ${u}).`;
 
-  // Helper: show current URLs
-  function showLinks(docData) {
-  if (!editLinkEl) return; // ← THIS LINE PREVENTS TOTAL FAILURE
+      function makeLinks(editId) {
+        const base = window.location.origin + window.location.pathname;
+        const viewURL = `${base}?u=${encodeURIComponent(u)}`;
+        const editURL = editId ? `${base}?u=${encodeURIComponent(u)}&edit=${encodeURIComponent(editId)}` : "";
+        return { viewURL, editURL };
+      }
 
-  const base = window.location.origin + window.location.pathname;
-  const viewURL = `${base}?u=${encodeURIComponent(u)}`;
-  const newEdit = docData?.editId || editKey || "";
-  const editURL = newEdit
-    ? `${base}?u=${encodeURIComponent(u)}&edit=${encodeURIComponent(newEdit)}`
-    : "";
+      function showEditLink(editId) {
+        if (!editLinkEl) return;
+        if (!editId) {
+          editLinkEl.innerText = "";
+          return;
+        }
+        const { editURL } = makeLinks(editId);
+        editLinkEl.innerHTML = `Edit link (keep private):<br><a href="${editURL}">${editURL}</a>`;
+      }
 
-  if (editURL) {
-    editLinkEl.innerHTML =
-      `Edit link (keep private):<br><a href="${editURL}">${editURL}</a>`;
-  } else {
-    editLinkEl.innerText = "";
-  }
-}
+      // ---- Save (edit-protected) ----
+      saveBtn.onclick = async () => {
+        msgEl.innerText = "Saving…";
 
-  // Save (only allowed if you have the edit key)
-  saveBtn.onclick = async () => {
-    // If doc doesn't exist yet, allow first save to "claim" it and generate editId
-    const snap = await docRef.get();
-    const existing = snap.exists ? snap.data() : null;
+        try {
+          const snap = await docRef.get();
+          const existing = snap.exists ? snap.data() : null;
 
-    // If it exists and has an editId, require the correct key
-    if (existing?.editId && editKey !== existing.editId) {
-      alert("View-only link. You need the edit link to change this page.");
-      return;
-    }
+          // If page already has an editId, require correct editKey in URL
+          if (existing?.editId && editKey !== existing.editId) {
+            msgEl.innerText = "View-only link. Use the private edit link to change this page.";
+            alert("View-only link. You need the edit link to change this page.");
+            return;
+          }
 
-    // If this is the first time, generate an editId
-    const editIdToUse = existing?.editId || editKey || crypto.randomUUID();
+          // If first save, create an editId (or reuse provided editKey)
+          const editIdToUse = existing?.editId || editKey || crypto.randomUUID();
 
-    await docRef.set({
-      mood: moodEl.value,
-      music: musicEl.value,
-      game: gameEl.value,
-      work: workEl.value,
-      editId: editIdToUse, // stored once, acts like password
-      updated: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
+          await docRef.set({
+            mood: moodEl.value,
+            music: musicEl.value,
+            game: gameEl.value,
+            work: workEl.value,
+            editId: editIdToUse,
+            updated: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
 
-    // If you didn't have an edit key in the URL, tell you the new edit link in console
-    showLinks({ editId: editIdToUse });
-  };
+          msgEl.innerText = "Saved ✓";
+          showEditLink(editIdToUse);
+        } catch (err) {
+          msgEl.innerText = "Save failed: " + (err?.message || err);
+        }
+      };
 
-  // Live updates
-  docRef.onSnapshot((doc) => {
-    const d = doc.data();
-    if (!d) {
-      liveEl.innerText = `No page yet for "${u}". Type and hit Save to create it.`;
-      updatedEl.innerText = "";
-      return;
-    }
+      // ---- Live updates ----
+      docRef.onSnapshot((doc) => {
+        const d = doc.data();
 
-    liveEl.innerText =
-      `Mood: ${d.mood || ""}\nMusic: ${d.music || ""}\nGame: ${d.game || ""}\nWorking on: ${d.work || ""}`;
+        if (!d) {
+          liveEl.innerText = `No page yet for "${u}". Type and hit Save to create it.`;
+          updatedEl.innerText = "";
+          // Don't show edit link until created
+          showEditLink("");
+          return;
+        }
 
-    if (d.updated && d.updated.toDate) {
-      const dt = d.updated.toDate();
-      updatedEl.innerText =
-        "Last updated: " + dt.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
-    } else {
-      updatedEl.innerText = "";
-    }
+        liveEl.innerText =
+          `Mood: ${d.mood || ""}\n` +
+          `Music: ${d.music || ""}\n` +
+          `Game: ${d.game || ""}\n` +
+          `Working on: ${d.work || ""}`;
 
-    showLinks(d);
-  });
-}); // THhis closes DOMContentLoaded
-    
-</script>
+        if (d.updated && d.updated.toDate) {
+          const dt = d.updated.toDate();
+          updatedEl.innerText = "Last updated: " + dt.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+        } else {
+          updatedEl.innerText = "";
+        }
 
-
+        // If you're on the edit link (or just created it), show it
+        if (d.editId) showEditLink(d.editId);
+      });
+    });
+  </script>
 </body>
 </html>
