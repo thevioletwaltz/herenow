@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>HereNow</title>
   
-  <h1>Version: 1</h1>
+  <h1>Version: 2</h1>
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -120,26 +120,26 @@
       }
 
   // ---- Save (edit-protected, NO pre-read) ----
-  saveBtn.onclick = async () => {
+saveBtn.onclick = async () => {
   msgEl.innerText = "Saving…";
 
+  // Use edit key from URL OR keep one stable per page in localStorage
+  const keyName = `herenow_edit_${u}`;
+  let editIdToUse = editKey || localStorage.getItem(keyName);
+
+  if (!editIdToUse) {
+    editIdToUse = crypto.randomUUID();
+    localStorage.setItem(keyName, editIdToUse);
+  }
+
   try {
-    // Use edit key from URL OR keep one stable per page in localStorage
-    const keyName = `herenow_edit_${u}`;
-    let editIdToUse = editKey || localStorage.getItem(keyName);
-
-    if (!editIdToUse) {
-      editIdToUse = crypto.randomUUID();
-      localStorage.setItem(keyName, editIdToUse);
-    }
-
     await docRef.set({
       mood: moodEl.value,
       music: musicEl.value,
       game: gameEl.value,
       work: workEl.value,
       editId: editIdToUse,
-      updated: firebase.firestore.FieldValue.serverTimestamp()
+      updated: new Date()
     }, { merge: true });
 
     msgEl.innerText = "Saved ✓";
