@@ -50,6 +50,8 @@
 <p id="editLink" style="font-size:0.9rem; opacity:0.7;"></p>
 
 <button id="save">Save</button>
+  
+<p id="msg" style="opacity:0.8; margin-top:0.75rem;"></p>
 
   <div class="card">
   <h3>Live view</h3>
@@ -58,6 +60,7 @@
 </div>
 
   <script>
+  window.addEventListener("DOMContentLoaded", () => {
   const firebaseConfig = {
   apiKey: "AIzaSy...",
   authDomain: "herenow.firebaseapp.com",
@@ -161,6 +164,8 @@
 
     showLinks(d);
   });
+}); // THhis closes DOMContentLoaded
+    
 </script>
 
 
