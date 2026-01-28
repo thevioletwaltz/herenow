@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>HereNow</title>
   
-  <h1>Version: 0</h1>
+  <h1>Version: 1</h1>
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -119,39 +119,35 @@
         editLinkEl.innerHTML = `Edit link (keep private):<br><a href="${editURL}">${editURL}</a>`;
       }
 
-      // ---- Save (edit-protected) ----
-      saveBtn.onclick = async () => {
-        msgEl.innerText = "Saving…";
+  // ---- Save (edit-protected, NO pre-read) ----
+  saveBtn.onclick = async () => {
+  msgEl.innerText = "Saving…";
 
-        try {
-          const snap = await docRef.get();
-          const existing = snap.exists ? snap.data() : null;
+  try {
+    // Use edit key from URL OR keep one stable per page in localStorage
+    const keyName = `herenow_edit_${u}`;
+    let editIdToUse = editKey || localStorage.getItem(keyName);
 
-          // If page already has an editId, require correct editKey in URL
-          if (existing?.editId && editKey !== existing.editId) {
-            msgEl.innerText = "View-only link. Use the private edit link to change this page.";
-            alert("View-only link. You need the edit link to change this page.");
-            return;
-          }
+    if (!editIdToUse) {
+      editIdToUse = crypto.randomUUID();
+      localStorage.setItem(keyName, editIdToUse);
+    }
 
-          // If first save, create an editId (or reuse provided editKey)
-          const editIdToUse = existing?.editId || editKey || crypto.randomUUID();
+    await docRef.set({
+      mood: moodEl.value,
+      music: musicEl.value,
+      game: gameEl.value,
+      work: workEl.value,
+      editId: editIdToUse,
+      updated: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
 
-          await docRef.set({
-            mood: moodEl.value,
-            music: musicEl.value,
-            game: gameEl.value,
-            work: workEl.value,
-            editId: editIdToUse,
-            updated: firebase.firestore.FieldValue.serverTimestamp()
-          }, { merge: true });
-
-          msgEl.innerText = "Saved ✓";
-          showEditLink(editIdToUse);
-        } catch (err) {
-          msgEl.innerText = "Save failed: " + (err?.message || err);
-        }
-      };
+    msgEl.innerText = "Saved ✓";
+    showEditLink(editIdToUse);
+  } catch (err) {
+    msgEl.innerText = "Save failed: " + (err?.message || err);
+  }
+};
 
       // ---- Live updates ----
       docRef.onSnapshot((doc) => {
