@@ -19,7 +19,7 @@
       margin: auto;
     }
 
-    .meta { opacity: .8; margin: 0.25rem 0 1rem; }
+    .meta { opacity: .85; margin: 0.25rem 0 1rem; }
 
     input, textarea, button {
       width: 100%;
@@ -53,9 +53,9 @@
       background: #0b0b0b;
     }
 
-    #editLink, #msg, #updated, #pageLabel {
+    #links, #msg, #updated, #pageLabel, #debug {
       font-size: 0.95rem;
-      opacity: 0.85;
+      opacity: 0.9;
       word-break: break-word;
     }
 
@@ -67,8 +67,10 @@
 
 <body>
   <h1>HereNow</h1>
-  <p class="meta">Version: 3</p>
+  <p class="meta">Version: 5</p>
+
   <p id="pageLabel" class="meta"></p>
+  <p id="debug" class="meta"></p>
 
   <input id="mood" placeholder="Current mood" />
   <input id="music" placeholder="Listening to" />
@@ -78,7 +80,7 @@
   <button id="save">Save</button>
 
   <p id="msg"></p>
-  <p id="editLink"></p>
+  <p id="links"></p>
 
   <div class="card">
     <h3 style="margin-top:0;">Live view</h3>
@@ -89,15 +91,16 @@
 
   <script>
     window.addEventListener("DOMContentLoaded", () => {
-      // ✅ Replace with YOUR REAL Firebase config (no placeholders)
+      // ✅ PASTE YOUR REAL Firebase config values here
       const firebaseConfig = {
-        apiKey: "PASTE_YOUR_REAL_API_KEY",
-        authDomain: "herenow.firebaseapp.com",
-        projectId: "herenow",
-        storageBucket: "herenow.appspot.com",
-        messagingSenderId: "PASTE_YOUR_REAL_SENDER_ID",
-        appId: "PASTE_YOUR_REAL_APP_ID"
-      };
+      apiKey: "AIzaSyAJWypqDstoZmXUVXbfhryept8blcvup8c",
+      authDomain: "herenowv2.firebaseapp.com",
+      projectId: "herenowv2",
+      storageBucket: "herenowv2.firebasestorage.app",
+      messagingSenderId: "991126883333",
+      appId: "1:991126883333:web:8fba2f2105167b7473e06c"
+    };
+
 
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
@@ -120,42 +123,67 @@
       const saveBtn = document.getElementById("save");
 
       const msgEl = document.getElementById("msg");
-      const editLinkEl = document.getElementById("editLink");
+      const linksEl = document.getElementById("links");
       const updatedEl = document.getElementById("updated");
       const liveEl = document.getElementById("live");
       const pageLabelEl = document.getElementById("pageLabel");
+      const debugEl = document.getElementById("debug");
 
       pageLabelEl.innerText = `Page: ${u}`;
+      debugEl.innerText = `Doc: pages/${u} | Edit param: ${editKey ? "yes" : "no"}`;
       msgEl.innerText = `Ready (page: ${u}).`;
 
-      function makeLinks(editId) {
-        const base = window.location.origin + window.location.pathname;
-        const viewURL = `${base}?u=${encodeURIComponent(u)}`;
-        const editURL = editId ? `${base}?u=${encodeURIComponent(u)}&edit=${encodeURIComponent(editId)}` : "";
-        return { viewURL, editURL };
+      function baseURL() {
+        return window.location.origin + window.location.pathname;
       }
 
-      function showEditLink(editId) {
-        if (!editLinkEl) return;
-        if (!editId) { editLinkEl.innerText = ""; return; }
-        const { editURL } = makeLinks(editId);
-        editLinkEl.innerHTML = `Edit link (keep private):<br><a href="${editURL}">${editURL}</a>`;
+      function viewURL() {
+        return `${baseURL()}?u=${encodeURIComponent(u)}`;
       }
 
-      // ---- Save (NO pre-read; stable editId via localStorage or URL) ----
+      function editURL(editId) {
+        return `${baseURL()}?u=${encodeURIComponent(u)}&edit=${encodeURIComponent(editId)}`;
+      }
+
+      function showLinks(editId) {
+        const v = viewURL();
+        let html = `View link:<br><a href="${v}" target="_blank">${v}</a>`;
+
+        if (editId) {
+          const e = editURL(editId);
+          html += `<br><br>Edit link (keep private):<br><a href="${e}" target="_blank">${e}</a>`;
+        }
+
+        linksEl.innerHTML = html;
+      }
+
+      // Always show view link, even before doc exists
+      showLinks("");
+
+      // ---- Save (edit-protected) ----
+      // Logic:
+      // - If doc has an editId already, you must provide it in URL (?edit=...)
+      // - If doc doesn't exist yet, first save "claims" it and sets an editId (shown as edit link)
+      //
+      // Note: real protection ultimately needs rules/auth. This is the clean client behavior.
       saveBtn.onclick = async () => {
         msgEl.innerText = "Saving…";
 
-        const keyName = `herenow_edit_${u}`;
-        let editIdToUse = editKey || localStorage.getItem(keyName);
-
-        if (!editIdToUse) {
-          editIdToUse = crypto.randomUUID();
-          localStorage.setItem(keyName, editIdToUse);
-        }
-
         try {
-          // Start write
+          // Read current doc state (we need this for true view/edit behavior)
+          const snap = await docRef.get();
+          const existing = snap.exists ? snap.data() : null;
+
+          // If page already claimed, require correct editKey
+          if (existing?.editId && editKey !== existing.editId) {
+            msgEl.innerText = "View-only link. Use the private edit link to change this page.";
+            alert("View-only link. You need the edit link to change this page.");
+            return;
+          }
+
+          // Claim or reuse editId
+          const editIdToUse = existing?.editId || editKey || crypto.randomUUID();
+
           const writePromise = docRef.set({
             mood: moodEl.value,
             music: musicEl.value,
@@ -165,11 +193,10 @@
             updated: new Date()
           }, { merge: true });
 
-          // Show success immediately (prevents "stuck on Saving…" on flaky mobile connections)
+          // Update UI immediately
           msgEl.innerText = "Saved ✓";
-          showEditLink(editIdToUse);
+          showLinks(editIdToUse);
 
-          // Still await so we can show real errors if it fails
           await writePromise;
         } catch (err) {
           msgEl.innerText = "Save failed: " + (err?.message || err);
@@ -183,7 +210,8 @@
         if (!d) {
           liveEl.innerText = `No page yet for "${u}". Type and hit Save to create it.`;
           updatedEl.innerText = "";
-          showEditLink(""); // hide until created
+          // Keep only view link visible
+          showLinks("");
           return;
         }
 
@@ -193,17 +221,18 @@
           `Game: ${d.game || ""}\n` +
           `Working on: ${d.work || ""}`;
 
+        // updated may come back as Firestore Timestamp or Date
         if (d.updated && d.updated.toDate) {
           const dt = d.updated.toDate();
           updatedEl.innerText = "Last updated: " + dt.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
         } else if (d.updated) {
-          // if updated is a plain Date string
           updatedEl.innerText = "Last updated: " + String(d.updated);
         } else {
           updatedEl.innerText = "";
         }
 
-        if (d.editId) showEditLink(d.editId);
+        // Show edit link if doc has one
+        showLinks(d.editId || "");
       });
     });
   </script>
