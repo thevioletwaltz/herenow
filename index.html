@@ -3,12 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>HereNow</title>
-  
-  <h1>Version: 2</h1>
-  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Firebase (compat so we can use firebase.initializeApp / firestore easily) -->
+  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
@@ -18,35 +15,60 @@
       background: #111;
       color: #eee;
       padding: 2rem;
-      max-width: 600px;
+      max-width: 640px;
       margin: auto;
     }
+
+    .meta { opacity: .8; margin: 0.25rem 0 1rem; }
 
     input, textarea, button {
       width: 100%;
       margin: 0.5rem 0;
-      padding: 0.6rem;
+      padding: 0.75rem;
       font-size: 1rem;
       font-family: inherit;
       box-sizing: border-box;
+      border-radius: 12px;
+      border: 1px solid #333;
+      background: #0b0b0b;
+      color: #eee;
+      outline: none;
     }
 
-    button { cursor: pointer; }
+    textarea { min-height: 110px; resize: vertical; }
+
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      background: #161616;
+    }
+
+    button:active { transform: translateY(1px); }
 
     .card {
-      margin-top: 2rem;
+      margin-top: 1.5rem;
       padding: 1rem;
       border: 1px solid #333;
+      border-radius: 16px;
+      background: #0b0b0b;
     }
 
-    #editLink, #msg, #updated { font-size: 0.95rem; opacity: 0.8; }
-    #live { white-space: pre-line; }
+    #editLink, #msg, #updated, #pageLabel {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      word-break: break-word;
+    }
+
+    #live { white-space: pre-line; line-height: 1.45; }
     a { color: #9ad; }
+    hr { border: none; border-top: 1px solid #222; margin: 1rem 0; }
   </style>
 </head>
 
 <body>
   <h1>HereNow</h1>
+  <p class="meta">Version: 3</p>
+  <p id="pageLabel" class="meta"></p>
 
   <input id="mood" placeholder="Current mood" />
   <input id="music" placeholder="Listening to" />
@@ -59,32 +81,34 @@
   <p id="editLink"></p>
 
   <div class="card">
-    <h3>Live view</h3>
+    <h3 style="margin-top:0;">Live view</h3>
     <p id="updated"></p>
+    <hr />
     <p id="live"></p>
   </div>
 
   <script>
     window.addEventListener("DOMContentLoaded", () => {
-      // ---- Firebase config (KEEP YOUR REAL VALUES) ----
+      // ✅ Replace with YOUR REAL Firebase config (no placeholders)
       const firebaseConfig = {
-  apiKey: "AIzaSyB3X9sdf98sd98sd9sd",
-  authDomain: "herenow.firebaseapp.com",
-  projectId: "herenow",
-  storageBucket: "herenow.appspot.com",
-  messagingSenderId: "9876543210",
-  appId: "1:9876543210:web:abcd1234efgh"
-  };
+        apiKey: "PASTE_YOUR_REAL_API_KEY",
+        authDomain: "herenow.firebaseapp.com",
+        projectId: "herenow",
+        storageBucket: "herenow.appspot.com",
+        messagingSenderId: "PASTE_YOUR_REAL_SENDER_ID",
+        appId: "PASTE_YOUR_REAL_APP_ID"
+      };
 
-      // ---- Init ----
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
-      // ---- Page identity from URL ----
+      // ---- URL identity ----
       const params = new URLSearchParams(window.location.search);
       const uRaw = (params.get("u") || "demo").trim();
-      const u = uRaw.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32) || "demo";
+      const u = (uRaw.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32)) || "demo";
       const editKey = (params.get("edit") || "").trim();
+
+      document.title = `HereNow — ${u}`;
 
       const docRef = db.collection("pages").doc(u);
 
@@ -99,7 +123,9 @@
       const editLinkEl = document.getElementById("editLink");
       const updatedEl = document.getElementById("updated");
       const liveEl = document.getElementById("live");
+      const pageLabelEl = document.getElementById("pageLabel");
 
+      pageLabelEl.innerText = `Page: ${u}`;
       msgEl.innerText = `Ready (page: ${u}).`;
 
       function makeLinks(editId) {
@@ -111,43 +137,44 @@
 
       function showEditLink(editId) {
         if (!editLinkEl) return;
-        if (!editId) {
-          editLinkEl.innerText = "";
-          return;
-        }
+        if (!editId) { editLinkEl.innerText = ""; return; }
         const { editURL } = makeLinks(editId);
         editLinkEl.innerHTML = `Edit link (keep private):<br><a href="${editURL}">${editURL}</a>`;
       }
 
-  // ---- Save (edit-protected, NO pre-read) ----
-saveBtn.onclick = async () => {
-  msgEl.innerText = "Saving…";
+      // ---- Save (NO pre-read; stable editId via localStorage or URL) ----
+      saveBtn.onclick = async () => {
+        msgEl.innerText = "Saving…";
 
-  // Use edit key from URL OR keep one stable per page in localStorage
-  const keyName = `herenow_edit_${u}`;
-  let editIdToUse = editKey || localStorage.getItem(keyName);
+        const keyName = `herenow_edit_${u}`;
+        let editIdToUse = editKey || localStorage.getItem(keyName);
 
-  if (!editIdToUse) {
-    editIdToUse = crypto.randomUUID();
-    localStorage.setItem(keyName, editIdToUse);
-  }
+        if (!editIdToUse) {
+          editIdToUse = crypto.randomUUID();
+          localStorage.setItem(keyName, editIdToUse);
+        }
 
-  try {
-    await docRef.set({
-      mood: moodEl.value,
-      music: musicEl.value,
-      game: gameEl.value,
-      work: workEl.value,
-      editId: editIdToUse,
-      updated: new Date()
-    }, { merge: true });
+        try {
+          // Start write
+          const writePromise = docRef.set({
+            mood: moodEl.value,
+            music: musicEl.value,
+            game: gameEl.value,
+            work: workEl.value,
+            editId: editIdToUse,
+            updated: new Date()
+          }, { merge: true });
 
-    msgEl.innerText = "Saved ✓";
-    showEditLink(editIdToUse);
-  } catch (err) {
-    msgEl.innerText = "Save failed: " + (err?.message || err);
-  }
-};
+          // Show success immediately (prevents "stuck on Saving…" on flaky mobile connections)
+          msgEl.innerText = "Saved ✓";
+          showEditLink(editIdToUse);
+
+          // Still await so we can show real errors if it fails
+          await writePromise;
+        } catch (err) {
+          msgEl.innerText = "Save failed: " + (err?.message || err);
+        }
+      };
 
       // ---- Live updates ----
       docRef.onSnapshot((doc) => {
@@ -156,8 +183,7 @@ saveBtn.onclick = async () => {
         if (!d) {
           liveEl.innerText = `No page yet for "${u}". Type and hit Save to create it.`;
           updatedEl.innerText = "";
-          // Don't show edit link until created
-          showEditLink("");
+          showEditLink(""); // hide until created
           return;
         }
 
@@ -170,11 +196,13 @@ saveBtn.onclick = async () => {
         if (d.updated && d.updated.toDate) {
           const dt = d.updated.toDate();
           updatedEl.innerText = "Last updated: " + dt.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+        } else if (d.updated) {
+          // if updated is a plain Date string
+          updatedEl.innerText = "Last updated: " + String(d.updated);
         } else {
           updatedEl.innerText = "";
         }
 
-        // If you're on the edit link (or just created it), show it
         if (d.editId) showEditLink(d.editId);
       });
     });
