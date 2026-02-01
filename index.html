@@ -19,7 +19,7 @@
       margin: auto;
     }
 
-    .meta { opacity: .85; margin: 0.25rem 0 1rem; }
+    .meta { opacity: .85; margin: 0.25rem 0 0.75rem; }
 
     input, textarea, button {
       width: 100%;
@@ -53,33 +53,46 @@
       background: #0b0b0b;
     }
 
-    #links, #msg, #updated, #pageLabel {
+    #msg, #updated {
       font-size: 0.95rem;
       opacity: 0.9;
       word-break: break-word;
     }
 
     #live { white-space: pre-line; line-height: 1.45; }
-    a { color: #9ad; }
     hr { border: none; border-top: 1px solid #222; margin: 1rem 0; }
+
+    #toggleEdit {
+      width: auto;
+      display: inline-block;
+      padding: 0.4rem 0.9rem;
+      margin-bottom: 0.75rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+    }
+
+    #editor {
+      margin-bottom: 1rem;
+    }
   </style>
 </head>
 
 <body>
   <h1>HereNow</h1>
-  <p class="meta">Version: 7 (single-link mode)</p>
+  <p class="meta">Version: 7.1 (single-link, toggle edit)</p>
 
   <p id="pageLabel" class="meta"></p>
+  <button id="toggleEdit">Edit</button>
 
-  <input id="mood" placeholder="Current mood" />
-  <input id="music" placeholder="Listening to" />
-  <input id="game" placeholder="Playing / watching" />
-  <textarea id="work" placeholder="Working on"></textarea>
+  <div id="editor">
+    <input id="mood" placeholder="Current mood" />
+    <input id="music" placeholder="Listening to" />
+    <input id="game" placeholder="Playing / watching" />
+    <textarea id="work" placeholder="Working on"></textarea>
 
-  <button id="save">Save</button>
-
-  <p id="msg"></p>
-  <p id="links"></p>
+    <button id="save">Save</button>
+    <p id="msg"></p>
+  </div>
 
   <div class="card">
     <h3 style="margin-top:0;">Live view</h3>
@@ -119,17 +132,35 @@
       const saveBtn = document.getElementById("save");
 
       const msgEl = document.getElementById("msg");
-      const linksEl = document.getElementById("links");
       const updatedEl = document.getElementById("updated");
       const liveEl = document.getElementById("live");
       const pageLabelEl = document.getElementById("pageLabel");
+      const toggleEditBtn = document.getElementById("toggleEdit");
+      const editorEl = document.getElementById("editor");
 
-      pageLabelEl.innerText = `Page: ${u}`;
+      pageLabelEl.innerText = `User page: ${u}`;
       msgEl.innerText = `Ready (page: ${u}).`;
 
-      // Show the one link to bookmark / share
-      const shareURL = `${window.location.origin}${window.location.pathname}?u=${encodeURIComponent(u)}`;
-      linksEl.innerHTML = `Link for this page:<br><a href="${shareURL}" target="_blank">${shareURL}</a>`;
+      // ---- Toggle edit boxes ----
+      let editing = false;
+
+      function updateEditUI() {
+        if (editing) {
+          editorEl.style.display = "block";
+          toggleEditBtn.innerText = "Done";
+        } else {
+          editorEl.style.display = "none";
+          toggleEditBtn.innerText = "Edit";
+        }
+      }
+
+      toggleEditBtn.onclick = () => {
+        editing = !editing;
+        updateEditUI();
+      };
+
+      // Start in view mode (no inputs visible)
+      updateEditUI();
 
       // ---- Save (everyone with the link can edit, for now) ----
       saveBtn.onclick = async () => {
@@ -155,12 +186,12 @@
         const d = doc.data();
 
         if (!d) {
-          liveEl.innerText = `No page yet for "${u}". Type and hit Save to create it.`;
+          liveEl.innerText = `No page yet for "${u}". Tap Edit, type, and Save to create it.`;
           updatedEl.innerText = "";
           return;
         }
 
-        // Fill inputs with current values
+        // Fill inputs with current values (for when you open Edit)
         if (typeof d.mood === "string") moodEl.value = d.mood;
         if (typeof d.music === "string") musicEl.value = d.music;
         if (typeof d.game === "string") gameEl.value = d.game;
