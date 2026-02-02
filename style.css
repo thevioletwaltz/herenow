@@ -110,13 +110,17 @@ button:active {
   margin-top: 1.5rem;
   padding: 1.25rem;
   border-radius: 18px;
-  background: rgba(10, 9, 18, 0.9);
-  border: 1px solid rgba(140, 122, 255, 0.35);
+
+  /* lighter + slightly purple so it stands off the background */
+  background: #141226;
+
+  border: 1px solid rgba(140, 122, 255, 0.45);
   box-shadow:
     0 18px 40px rgba(0, 0, 0, 0.7),
-    0 0 32px rgba(140, 122, 255, 0.26);
-  position: relative;              /* for pet positioning */
-  backdrop-filter: blur(14px);     /* gives a soft glassy feel on supported browsers */
+    0 0 32px rgba(140, 122, 255, 0.3);
+
+  position: relative;          /* for pet positioning */
+  backdrop-filter: blur(14px); /* safe if it's already there; fine to keep */
 }
 
 #msg,
