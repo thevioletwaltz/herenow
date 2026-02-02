@@ -2,11 +2,12 @@
 
 body {
   font-family: system-ui, sans-serif;
-  background: #111;
-  color: #eee;
+  background:
+    radial-gradient(circle at top, #23213c 0, #0b0714 45%, #050308 100%);
+  color: #f3f3f7;
   padding: 2rem;
-  max-width: 640px;
-  margin: auto;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 .meta {
@@ -27,11 +28,21 @@ select {
   font-family: inherit;
   box-sizing: border-box;
   border-radius: 12px;
-  border: 1px solid #333;
-  background: #0b0b0b;
-  color: #eee;
+  border: 1px solid #3a3458;
+  background: #111019;
+  color: #f5f3ff;
   outline: none;
 }
+
+/* focus state so it feels interactive, not dead */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #d56bff;
+  box-shadow: 0 0 0 1px rgba(213, 107, 255, 0.4);
+}
+
+/* --- button --- */
 
 button {
   cursor: pointer;
@@ -97,11 +108,15 @@ button:active {
 
 .card {
   margin-top: 1.5rem;
-  padding: 1rem;
-  border: 1px solid #333;
-  border-radius: 16px;
-  background: #0b0b0b;
-  position: relative;    /* for pet positioning */
+  padding: 1.25rem;
+  border-radius: 18px;
+  background: rgba(10, 9, 18, 0.9);
+  border: 1px solid rgba(140, 122, 255, 0.35);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.7),
+    0 0 32px rgba(140, 122, 255, 0.26);
+  position: relative;              /* for pet positioning */
+  backdrop-filter: blur(14px);     /* gives a soft glassy feel on supported browsers */
 }
 
 #msg,
