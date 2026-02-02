@@ -15,11 +15,19 @@
   
 </head>
 
-<body>
-  <h1>HereNow</h1>
-  <p class="meta">Version: 7.2 (css separate)</p>
+ <body>
+  <div class="page-header">
+    <div class="avatar-wrap">
+      <img id="avatarImg" src="img/avatar.png" alt="User avatar" />
+    </div>
 
-  <p id="pageLabel" class="meta"></p>
+    <div class="title-wrap">
+      <h1>HereNow</h1>
+      <p class="meta">Version: 7.3 (pet)</p>
+      <p id="pageLabel" class="meta"></p>
+    </div>
+  </div>
+
   <button id="toggleEdit">Edit</button>
 
   <div id="editor">
@@ -37,6 +45,11 @@
     <p id="updated"></p>
     <hr />
     <p id="live"></p>
+
+    <!-- Pet in bottom-right corner -->
+    <div class="pet-slot">
+      <img id="petImg" src="pets/nightcat.png" alt="Page pet" />
+    </div>
   </div>
 
   <script>
