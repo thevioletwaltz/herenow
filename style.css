@@ -18,7 +18,8 @@ body {
 
 input,
 textarea,
-button {
+button,
+select {
   width: 100%;
   margin: 0.5rem 0;
   padding: 0.75rem;
@@ -83,7 +84,8 @@ button:active {
 
 /* inputs + textarea: same width + height */
 .field-row input,
-.field-row textarea {
+.field-row textarea,
+.field-row select {
   width: 100%;
   margin: 0;
   height: 2.6rem;
