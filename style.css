@@ -2,8 +2,8 @@
 
 body {
   font-family: system-ui, sans-serif;
-  background:
-    radial-gradient(circle at top, #23213c 0, #0b0714 45%, #050308 100%);
+  /* darker, softer background, no big light spot */
+  background: radial-gradient(circle at top, #12101c 0, #06040c 55%, #020107 100%);
   color: #f3f3f7;
   padding: 2rem;
   max-width: 720px;
