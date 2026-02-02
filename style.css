@@ -94,7 +94,7 @@ button:active {
 
 /* keep textarea from going wild */
 .field-row textarea {
-  resize: vertical;
+  resize: none;          /* <- turn off the little corner lines */
   min-height: 2.6rem;
   max-height: 6rem;
 }
