@@ -47,7 +47,7 @@ button:active {
   transform: translateY(1px);
 }
 
-/* --- Editor / toggle --- */
+/* --- Edit toggle + editor --- */
 
 #toggleEdit {
   width: auto;
@@ -62,7 +62,7 @@ button:active {
   margin-bottom: 1rem;
 }
 
-/* Labels on the LEFT of input/textarea */
+/* Labels on the LEFT of the input/textarea */
 
 .field-row {
   display: flex;
@@ -72,17 +72,19 @@ button:active {
 }
 
 .field-row label {
-  min-width: 100px;      /* adjust label width if you want */
+  min-width: 90px;       /* width of label column */
   text-align: right;
-  font-size: 0.9rem;
-  opacity: 0.85;
+  font-size: 1rem;       /* similar size to input text */
+  opacity: 0.9;
   margin: 0;
 }
 
+/* Override global width:100% so they can sit in a row */
 .field-row input,
 .field-row textarea {
   flex: 1;
-  margin: 0;             /* override the global 0.5rem margin */
+  margin: 0;
+  width: auto;
 }
 
 /* --- Card base --- */
@@ -93,7 +95,7 @@ button:active {
   border: 1px solid #333;
   border-radius: 16px;
   background: #0b0b0b;
-  position: relative;     /* needed for pet in corner */
+  position: relative;    /* needed for pet in corner */
 }
 
 #msg,
@@ -131,7 +133,7 @@ hr {
   margin: 0.1rem 0;
 }
 
-/* --- Avatar bubble (used in header + card) --- */
+/* --- Avatar bubbles --- */
 
 .avatar-wrap {
   width: 56px;
@@ -149,13 +151,13 @@ hr {
   object-fit: cover;
 }
 
-/* Slightly smaller version inside the Live view card */
+/* smaller avatar inside the Live view card */
 .card-avatar {
   width: 44px;
   height: 44px;
 }
 
-/* --- Card header: avatar + Live view / updated --- */
+/* --- Card header: avatar + text --- */
 
 .card-header {
   display: flex;
@@ -172,19 +174,20 @@ hr {
   margin: 0.15rem 0 0;
 }
 
-/* Pet in bottom-right corner of card */
+/* --- Pet in bottom-right corner of card --- */
+
 .pet-slot {
   position: absolute;
   right: 10px;
   bottom: 10px;
   display: flex;
-  flex-direction: column;    /* image above, name below */
-  align-items: center;       /* center image + text together */
+  flex-direction: column;   /* image above, name below */
+  align-items: center;      /* center image + text together */
   pointer-events: none;
 }
 
 .pet-slot img {
-  width: 80px;               /* change to 70/90px if you want */
+  width: 80px;              /* increase/decrease to taste */
   height: 80px;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
