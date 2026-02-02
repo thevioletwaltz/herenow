@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>HereNow</title>
+  <title>MoodBadge</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Firebase (compat) -->
@@ -14,17 +14,20 @@
 </head>
 
 <body>
+  
   <!-- Top-of-page header with avatar + title -->
   <div class="page-header">
     <div class="avatar-wrap">
       <img id="avatarImg" src="avatar.png" alt="User avatar" />
     </div>
 
-    <div class="title-wrap">
-      <h1>HereNow</h1>
-      <p class="meta">Version: 3.0 (pets + drop down editor)</p>
+    <div class="title-block">
+      <h1>MoodBadge</h1>
+      <div class="version">v3.0 · pets + editor</div>
     </div>
+
   </div>
+
 
   <!-- Edit toggle + editor -->
   <button id="toggleEdit">Edit</button>
@@ -75,6 +78,8 @@
         <img src="avatar.png" alt="User avatar small" />
       </div>
 
+        <!-- live view -->
+
       <div class="card-header-text">
         <h3 id="liveTitle">Live view</h3>
         <p id="updated"></p>
@@ -90,6 +95,9 @@
       <div class="pet-name" id="petNameDisplay">Nightcat</div>
     </div>
   </div>
+
+  <!-- Footer -->
+    <div class="made-by">Made with MoodBadge</div>
 
   <script>
     window.addEventListener("DOMContentLoaded", () => {
@@ -111,7 +119,7 @@
       const uRaw = (params.get("u") || "demo").trim(); // default demo
       const u = (uRaw.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32)) || "demo";
 
-      document.title = `HereNow — ${u}`;
+      document.title = `MoodBadge — ${u}`;
       const docRef = db.collection("pages").doc(u);
 
       // ---- Elements ----
