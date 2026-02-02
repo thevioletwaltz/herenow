@@ -62,30 +62,41 @@ button:active {
   margin-bottom: 1rem;
 }
 
-/* Labels on the LEFT of the input/textarea */
+
+/* --- Editor rows: neat, aligned, same-size boxes --- */
 
 .field-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  column-gap: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
 .field-row label {
-  min-width: 90px;       /* width of label column */
   text-align: right;
-  font-size: 1rem;       /* similar size to input text */
+  font-size: 0.95rem;
+  font-weight: 500;
   opacity: 0.9;
   margin: 0;
 }
 
-/* Override global width:100% so they can sit in a row */
+/* inputs + textarea: same width + height */
 .field-row input,
 .field-row textarea {
-  flex: 1;
+  width: 100%;
   margin: 0;
-  width: auto;
+  height: 2.6rem;
+  padding: 0.6rem 0.75rem;
 }
+
+/* keep textarea from going wild */
+.field-row textarea {
+  resize: vertical;
+  min-height: 2.6rem;
+  max-height: 6rem;
+}
+
 
 /* --- Card base --- */
 
