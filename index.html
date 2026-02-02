@@ -9,13 +9,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
-  <!-- took css code from here. link below -->
-
   <link rel="stylesheet" href="style.css" />
-  
 </head>
 
- <body>
+<body>
   <!-- Top-of-page header with avatar + title -->
   <div class="page-header">
     <div class="avatar-wrap">
@@ -29,35 +26,33 @@
     </div>
   </div>
 
-   <!-- new section for box -->
-   
+  <!-- Edit toggle + editor -->
   <button id="toggleEdit">Edit</button>
 
-<div id="editor">
-  <div class="field-row">
-    <label for="mood">Mood</label>
-    <input id="mood" placeholder="Current mood" />
+  <div id="editor">
+    <div class="field-row">
+      <label for="mood">Mood:</label>
+      <input id="mood" placeholder="Current mood" />
+    </div>
+
+    <div class="field-row">
+      <label for="music">Music:</label>
+      <input id="music" placeholder="Listening to" />
+    </div>
+
+    <div class="field-row">
+      <label for="game">Game / watching:</label>
+      <input id="game" placeholder="Playing / watching" />
+    </div>
+
+    <div class="field-row">
+      <label for="work">Working on:</label>
+      <textarea id="work" placeholder="Working on"></textarea>
+    </div>
+
+    <button id="save">Save</button>
+    <p id="msg"></p>
   </div>
-
-  <div class="field-row">
-    <label for="music">Music</label>
-    <input id="music" placeholder="Listening to" />
-  </div>
-
-  <div class="field-row">
-    <label for="game">Game / watching</label>
-    <input id="game" placeholder="Playing / watching" />
-  </div>
-
-  <div class="field-row">
-    <label for="work">Working on</label>
-    <textarea id="work" placeholder="Working on"></textarea>
-  </div>
-
-  <button id="save">Save</button>
-  <p id="msg"></p>
-</div>
-
 
   <!-- Live view card with avatar (top-left) and pet (bottom-right) -->
   <div class="card">
@@ -81,11 +76,10 @@
       <img id="petImg" src="cat.png" alt="Pet" />
       <div class="pet-name">Nightcat</div>
     </div>
-
+  </div> <!-- end .card -->
 
   <script>
     window.addEventListener("DOMContentLoaded", () => {
-      
       // Your real Firebase config for herenowv2
       const firebaseConfig = {
         apiKey: "AIzaSyAJWypqDstoZmXUVXbfhryept8blcvup8c",
@@ -188,7 +182,8 @@
 
         if (d.updated && d.updated.toDate) {
           const dt = d.updated.toDate();
-          updatedEl.innerText = "Last updated: " + dt.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+          updatedEl.innerText =
+            "Last updated: " + dt.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
         } else if (d.updated) {
           updatedEl.innerText = "Last updated: " + String(d.updated);
         } else {
