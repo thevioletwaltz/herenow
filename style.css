@@ -2,13 +2,13 @@
 
 body {
   font-family: system-ui, sans-serif;
-  /* darker, softer background, no big light spot */
-  background: radial-gradient(circle at top, #12101c 0, #06040c 55%, #020107 100%);
+  background: #050308;      /* solid, dark – no gradients */
   color: #f3f3f7;
   padding: 2rem;
   max-width: 720px;
   margin: 0 auto;
 }
+
 
 .meta {
   opacity: .85;
