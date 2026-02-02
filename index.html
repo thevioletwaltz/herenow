@@ -23,7 +23,6 @@
     <div class="title-wrap">
       <h1>HereNow</h1>
       <p class="meta">Version: 3.0 (pets + drop down editor)</p>
-      <p id="pageLabel" class="meta"></p>
     </div>
   </div>
 
@@ -127,7 +126,6 @@
       const msgEl       = document.getElementById("msg");
       const updatedEl   = document.getElementById("updated");
       const liveEl      = document.getElementById("live");
-      const pageLabelEl = document.getElementById("pageLabel");
       const toggleEditBtn = document.getElementById("toggleEdit");
       const editorEl    = document.getElementById("editor");
       const liveTitleEl = document.getElementById("liveTitle");
@@ -135,9 +133,8 @@
       const petImgEl          = document.getElementById("petImg");
       const petNameDisplayEl  = document.getElementById("petNameDisplay");
 
-      pageLabelEl.innerText = `User: ${u}`;
       liveTitleEl.innerText = u;
-      msgEl.innerText = `Ready (page: ${u}).`;
+      msgEl.innerText = `Ready (page: ${u})`;
 
       // ---- Edit toggle ----
       let editing = false;
