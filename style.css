@@ -155,9 +155,10 @@ hr {
   position: absolute;
   right: 10px;
   bottom: 10px;
-  width: 60px;
-  height: 60px;
+  width: 75px;   /* was 60px – ~25% bigger */
+  height: 75px;
   display: flex;
+  flex-direction: column;
   align-items: flex-end;
   justify-content: flex-end;
   pointer-events: none;
@@ -168,4 +169,23 @@ hr {
   height: 100%;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.pet-name {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  margin-top: 0.15rem;
+}
+
+/* --- CSS for Labels --- */
+
+.field {
+  margin-bottom: 0.75rem;
+}
+
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin-bottom: 0.15rem;
 }
