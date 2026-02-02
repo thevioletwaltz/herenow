@@ -33,11 +33,6 @@ select {
   outline: none;
 }
 
-textarea {
-  min-height: 110px;
-  resize: vertical;
-}
-
 button {
   cursor: pointer;
   font-weight: 600;
@@ -63,8 +58,7 @@ button:active {
   margin-bottom: 1rem;
 }
 
-
-/* --- Editor rows: neat, aligned, same-size boxes --- */
+/* --- Editor rows: labels left, boxes neat --- */
 
 .field-row {
   display: grid;
@@ -82,7 +76,7 @@ button:active {
   margin: 0;
 }
 
-/* inputs + textarea: same width + height */
+/* inputs + textarea + select: same width + height */
 .field-row input,
 .field-row textarea,
 .field-row select {
@@ -92,13 +86,12 @@ button:active {
   padding: 0.6rem 0.75rem;
 }
 
-/* keep textarea from going wild */
+/* status textarea: fixed height, no resize grip */
 .field-row textarea {
-  resize: none;          /* <- turn off the little corner lines */
+  resize: none;
   min-height: 2.6rem;
   max-height: 6rem;
 }
-
 
 /* --- Card base --- */
 
@@ -108,7 +101,7 @@ button:active {
   border: 1px solid #333;
   border-radius: 16px;
   background: #0b0b0b;
-  position: relative;    /* needed for pet in corner */
+  position: relative;    /* for pet positioning */
 }
 
 #msg,
@@ -170,7 +163,7 @@ hr {
   height: 44px;
 }
 
-/* --- Card header: avatar + text --- */
+/* --- Card header: avatar + username + updated text --- */
 
 .card-header {
   display: flex;
@@ -200,7 +193,7 @@ hr {
 }
 
 .pet-slot img {
-  width: 80px;              /* increase/decrease to taste */
+  width: 80px;
   height: 80px;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
