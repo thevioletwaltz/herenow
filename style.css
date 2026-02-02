@@ -172,21 +172,19 @@ hr {
   margin: 0.15rem 0 0;
 }
 
-/* --- Pet in bottom-right corner of card --- */
-
+/* Pet in bottom-right corner of card */
 .pet-slot {
   position: absolute;
   right: 10px;
   bottom: 10px;
   display: flex;
   flex-direction: column;    /* image above, name below */
-  align-items: flex-end;
+  align-items: center;       /* center image + text together */
   pointer-events: none;
 }
 
-/* Explicit size in pixels so it's clearly bigger */
 .pet-slot img {
-  width: 80px;               /* tweak up/down if you want */
+  width: 80px;               /* change to 70/90px if you want */
   height: 80px;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
@@ -194,6 +192,7 @@ hr {
 
 .pet-name {
   font-size: 0.75rem;
-  opacity: 0.85;
-  margin-top: 0.15rem;
+  opacity: 0.9;
+  margin-top: 0.1rem;
+  text-align: center;
 }
