@@ -224,3 +224,23 @@ hr {
   margin-top: 0.1rem;
   text-align: center;
 }
+
+/* --- moodbadge start --- */
+
+.title-block {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.version {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+.made-by {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 0.75rem;
+  opacity: 0.4;
+}
