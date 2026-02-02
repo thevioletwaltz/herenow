@@ -9,21 +9,23 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
   <!-- Top-of-page header with avatar + title -->
-  <div class="card-header">
-  <div class="avatar-wrap card-avatar">
-    <img src="avatar.png" alt="User avatar small" />
-  </div>
+  <div class="page-header">
+    <div class="avatar-wrap">
+      <img id="avatarImg" src="avatar.png" alt="User avatar" />
+    </div>
 
-  <div class="card-header-text">
-    <h3 id="cardTitle" style="margin-top:0;"></h3>
-    <p id="updated"></p>
+    <div class="title-wrap">
+      <h1>HereNow</h1>
+      <p class="meta">Version: 8.0 (pets + tidy editor)</p>
+      <p id="pageLabel" class="meta"></p>
+    </div>
   </div>
-</div>
 
   <!-- Edit toggle + editor -->
   <button id="toggleEdit">Edit</button>
@@ -45,21 +47,19 @@
     </div>
 
     <div class="field-row">
-      <label for="work">Current status:</label>
-      <textarea id="work" placeholder="Current status"></textarea>
+      <label for="status">Current status:</label>
+      <textarea id="status" placeholder="What are you up to?"></textarea>
     </div>
 
-    <!-- Pet choice -->
     <div class="field-row">
       <label for="petSelect">Pet:</label>
       <select id="petSelect">
         <option value="nightcat">Nightcat</option>
-        <option value="mochi">Mochi bun</option>
-        <option value="fox">Plush fox</option>
+        <option value="mochibun">Mochi Bun</option>
+        <option value="emberfox">Emberfox</option>
       </select>
     </div>
 
-    <!-- Pet nickname -->
     <div class="field-row">
       <label for="petName">Pet name:</label>
       <input id="petName" placeholder="Nightcat" />
@@ -69,7 +69,7 @@
     <p id="msg"></p>
   </div>
 
-  <!-- Live view card with avatar (top-left) and pet (bottom-right) -->
+  <!-- Live view card with avatar and pet -->
   <div class="card">
     <div class="card-header">
       <div class="avatar-wrap card-avatar">
@@ -77,7 +77,7 @@
       </div>
 
       <div class="card-header-text">
-        <h3 style="margin-top:0;">Live view</h3>
+        <h3 id="liveTitle">Live view</h3>
         <p id="updated"></p>
       </div>
     </div>
@@ -88,13 +88,13 @@
     <!-- Pet in bottom-right corner -->
     <div class="pet-slot">
       <img id="petImg" src="cat.png" alt="Pet" />
-      <div class="pet-name">Nightcat</div>
+      <div class="pet-name" id="petNameDisplay">Nightcat</div>
     </div>
   </div>
 
   <script>
     window.addEventListener("DOMContentLoaded", () => {
-      // --- Firebase config for herenowv2 ---
+      // Your real Firebase config for herenowv2
       const firebaseConfig = {
         apiKey: "AIzaSyAJWypqDstoZmXUVXbfhryept8blcvup8c",
         authDomain: "herenowv2.firebaseapp.com",
@@ -107,7 +107,7 @@
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
-      // ---- URL identity: one page per `u` ----
+      // ---- URL identity: one page per ?u= ----
       const params = new URLSearchParams(window.location.search);
       const uRaw = (params.get("u") || "demo").trim(); // default demo
       const u = (uRaw.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32)) || "demo";
@@ -116,61 +116,31 @@
       const docRef = db.collection("pages").doc(u);
 
       // ---- Elements ----
-      const moodEl = document.getElementById("mood");
-      const musicEl = document.getElementById("music");
-      const gameEl = document.getElementById("game");
-      const workEl = document.getElementById("work");
+      const moodEl   = document.getElementById("mood");
+      const musicEl  = document.getElementById("music");
+      const gameEl   = document.getElementById("game");
+      const statusEl = document.getElementById("status");
       const petSelectEl = document.getElementById("petSelect");
-      const petNameEl = document.getElementById("petName");
+      const petNameEl   = document.getElementById("petName");
+      const saveBtn  = document.getElementById("save");
 
-      const saveBtn = document.getElementById("save");
-      const msgEl = document.getElementById("msg");
-      const updatedEl = document.getElementById("updated");
-      const liveEl = document.getElementById("live");
+      const msgEl       = document.getElementById("msg");
+      const updatedEl   = document.getElementById("updated");
+      const liveEl      = document.getElementById("live");
       const pageLabelEl = document.getElementById("pageLabel");
       const toggleEditBtn = document.getElementById("toggleEdit");
-      const editorEl = document.getElementById("editor");
-      const cardTitleEl = document.getElementById("cardTitle");
+      const editorEl    = document.getElementById("editor");
+      const liveTitleEl = document.getElementById("liveTitle");
 
-      const petImgEl = document.getElementById("petImg");
-      const petNameDisplayEl = document.querySelector(".pet-name");
+      const petImgEl          = document.getElementById("petImg");
+      const petNameDisplayEl  = document.getElementById("petNameDisplay");
 
       pageLabelEl.innerText = `User: ${u}`;
-        if (cardTitleEl) {
-        cardTitleEl.innerText = u;
-        }
+      liveTitleEl.innerText = u;
       msgEl.innerText = `Ready (page: ${u}).`;
 
-      // --- Pet definitions ---
-      const PETS = {
-        nightcat: { label: "Nightcat", file: "cat.png" },
-        mochi:    { label: "Mochi bun", file: "mochi.png" },
-        fox:      { label: "Plush fox", file: "fox.png" }
-      };
-
-      function applyPet(type, nickname) {
-        const pet = PETS[type] || PETS.nightcat;
-        const nameToUse = (nickname && nickname.trim()) || pet.label;
-
-        if (petImgEl) {
-          petImgEl.src = pet.file;
-          petImgEl.alt = nameToUse;
-        }
-        if (petNameDisplayEl) {
-          petNameDisplayEl.textContent = nameToUse;
-        }
-        // keep placeholder in sync so empty nickname shows default nicely
-        if (petNameEl && !petNameEl.value.trim()) {
-          petNameEl.placeholder = pet.label;
-        }
-      }
-
-      // Initial pet UI state
-      applyPet("nightcat", "");
-
-      // --- Toggle edit boxes ---
+      // ---- Edit toggle ----
       let editing = false;
-
       function updateEditUI() {
         if (editing) {
           editorEl.style.display = "block";
@@ -180,71 +150,98 @@
           toggleEditBtn.innerText = "Edit";
         }
       }
-
       toggleEditBtn.onclick = () => {
         editing = !editing;
         updateEditUI();
       };
+      updateEditUI(); // start hidden
 
-      // Start in view mode
-      updateEditUI();
+      // ---- Pet mapping ----
+      const petMap = {
+        nightcat: { src: "cat.png",  defaultName: "Nightcat" },
+        mochibun: { src: "mochi.png", defaultName: "Mochi Bun" },
+        emberfox: { src: "fox.png",  defaultName: "Emberfox" }
+      };
 
-      // --- Save (everyone with link can edit, for now) ---
+      function applyPet(petKey, petName) {
+        const def = petMap[petKey] || petMap.nightcat;
+        petImgEl.src = def.src;
+        petNameDisplayEl.innerText = petName || def.defaultName;
+        if (!petNameEl.value) {
+          petNameEl.placeholder = def.defaultName;
+        }
+      }
+
+      // ---- Save (everyone with link can edit, for now) ----
       saveBtn.onclick = async () => {
         msgEl.innerText = "Saving…";
         try {
-          const petTypeToSave = petSelectEl.value || "nightcat";
-          const petNameToSave = petNameEl.value || "";
+          const petKey = petSelectEl.value || "nightcat";
+          const petName = petNameEl.value.trim();
 
-          const writePromise = docRef.set({
+          const statusVal = statusEl.value;
+
+          const data = {
             mood: moodEl.value,
             music: musicEl.value,
             game: gameEl.value,
-            work: workEl.value,
-            petType: petTypeToSave,
-            petName: petNameToSave,
+            status: statusVal,
+            work: statusVal,        // keep older field name too, for compatibility
+            petKey,
+            petName,
             updated: new Date()
-          }, { merge: true });
+          };
 
+          await docRef.set(data, { merge: true });
           msgEl.innerText = "Saved ✓";
-          await writePromise;
         } catch (err) {
           msgEl.innerText = "Save failed: " + (err?.message || err);
         }
       };
 
-      // --- Live updates ---
-      docRef.onSnapshot((doc) => {
-        const d = doc.data();
+      // ---- Live updates from Firestore ----
+      docRef.onSnapshot((snap) => {
+        const d = snap.data();
 
         if (!d) {
-          liveEl.innerText =
-            `No page yet for "${u}". Tap Edit, pick your pet, type, and Save to create it.`;
+          liveEl.innerText = `No page yet for "${u}". Tap Edit, type, and Save to create it.`;
           updatedEl.innerText = "";
+          applyPet("nightcat", "");
           return;
         }
 
-        // Fill inputs with current values (for when you open Edit)
-        if (typeof d.mood === "string") moodEl.value = d.mood;
+        // status can be in status or legacy work
+        const statusVal =
+          (typeof d.status === "string" && d.status) ||
+          (typeof d.work === "string"   && d.work)   ||
+          "";
+
+        // Fill inputs
+        if (typeof d.mood === "string")  moodEl.value = d.mood;
         if (typeof d.music === "string") musicEl.value = d.music;
-        if (typeof d.game === "string") gameEl.value = d.game;
-        if (typeof d.work === "string") workEl.value = d.work;
+        if (typeof d.game === "string")  gameEl.value = d.game;
+        statusEl.value = statusVal;
 
-        // Pet type + nickname from DB
-        const petTypeFromDb = d.petType && PETS[d.petType] ? d.petType : "nightcat";
-        const petNameFromDb = typeof d.petName === "string" ? d.petName : "";
+        if (d.petKey && petMap[d.petKey]) {
+          petSelectEl.value = d.petKey;
+        } else {
+          petSelectEl.value = "nightcat";
+        }
 
-        petSelectEl.value = petTypeFromDb;
-        petNameEl.value = petNameFromDb;
-        applyPet(petTypeFromDb, petNameFromDb);
+        if (typeof d.petName === "string") {
+          petNameEl.value = d.petName;
+        } else {
+          petNameEl.value = "";
+        }
 
         // Live text
         liveEl.innerText =
           `Mood: ${d.mood || ""}\n` +
           `Music: ${d.music || ""}\n` +
           `Game: ${d.game || ""}\n` +
-          `Working on: ${d.work || ""}`;
+          `Current status: ${statusVal || ""}`;
 
+        // Updated timestamp
         if (d.updated && d.updated.toDate) {
           const dt = d.updated.toDate();
           updatedEl.innerText =
@@ -254,15 +251,11 @@
         } else {
           updatedEl.innerText = "";
         }
-      });
 
-      // --- Live preview while editing pet ---
-      petSelectEl.addEventListener("change", () => {
-        applyPet(petSelectEl.value, petNameEl.value);
-      });
-
-      petNameEl.addEventListener("input", () => {
-        applyPet(petSelectEl.value, petNameEl.value);
+        // Apply pet
+        const petKey = d.petKey || "nightcat";
+        const petName = d.petName || "";
+        applyPet(petKey, petName);
       });
     });
   </script>
