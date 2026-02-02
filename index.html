@@ -16,6 +16,7 @@
 </head>
 
  <body>
+  <!-- Top-of-page header with avatar + title -->
   <div class="page-header">
     <div class="avatar-wrap">
       <img id="avatarImg" src="img/avatar.png" alt="User avatar" />
@@ -23,7 +24,7 @@
 
     <div class="title-wrap">
       <h1>HereNow</h1>
-      <p class="meta">Version: 7.3 (pet)</p>
+      <p class="meta">Version: 7.3 (css separate)</p>
       <p id="pageLabel" class="meta"></p>
     </div>
   </div>
@@ -40,20 +41,33 @@
     <p id="msg"></p>
   </div>
 
+  <!-- Live view card with avatar (top-left) and pet (bottom-right) -->
   <div class="card">
-    <h3 style="margin-top:0;">Live view</h3>
-    <p id="updated"></p>
+    <div class="card-header">
+      <div class="avatar-wrap card-avatar">
+        <!-- small copy of the same avatar image -->
+        <img src="img/avatar.png" alt="User avatar small" />
+      </div>
+
+      <div class="card-header-text">
+        <h3 style="margin-top:0;">Live view</h3>
+        <p id="updated"></p>
+      </div>
+    </div>
+
     <hr />
     <p id="live"></p>
 
     <!-- Pet in bottom-right corner -->
     <div class="pet-slot">
-      <img id="petImg" src="pets/nightcat.png" alt="Page pet" />
+       <img id="petImg" src="pets/cat.png" alt="Pet" />
     </div>
   </div>
 
+
   <script>
     window.addEventListener("DOMContentLoaded", () => {
+      
       // Your real Firebase config for herenowv2
       const firebaseConfig = {
         apiKey: "AIzaSyAJWypqDstoZmXUVXbfhryept8blcvup8c",
@@ -89,7 +103,7 @@
       const toggleEditBtn = document.getElementById("toggleEdit");
       const editorEl = document.getElementById("editor");
 
-      pageLabelEl.innerText = `User page: ${u}`;
+      pageLabelEl.innerText = `User: ${u}`;
       msgEl.innerText = `Ready (page: ${u}).`;
 
       // ---- Toggle edit boxes ----
