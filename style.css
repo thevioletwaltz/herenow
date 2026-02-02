@@ -1,75 +1,114 @@
-    body {
-      font-family: system-ui, sans-serif;
-      background: #111;
-      color: #eee;
-      padding: 2rem;
-      max-width: 640px;
-      margin: auto;
-    }
+/* --- Base layout --- */
 
-    .meta { opacity: .85; margin: 0.25rem 0 0.75rem; }
+body {
+  font-family: system-ui, sans-serif;
+  background: #111;
+  color: #eee;
+  padding: 2rem;
+  max-width: 640px;
+  margin: auto;
+}
 
-    input, textarea, button {
-      width: 100%;
-      margin: 0.5rem 0;
-      padding: 0.75rem;
-      font-size: 1rem;
-      font-family: inherit;
-      box-sizing: border-box;
-      border-radius: 12px;
-      border: 1px solid #333;
-      background: #0b0b0b;
-      color: #eee;
-      outline: none;
-    }
+.meta {
+  opacity: .85;
+  margin: 0.25rem 0 0.75rem;
+}
 
-    textarea { min-height: 110px; resize: vertical; }
+/* --- Form + buttons --- */
 
-    button {
-      cursor: pointer;
-      font-weight: 600;
-      background: #161616;
-    }
+input,
+textarea,
+button {
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1px solid #333;
+  background: #0b0b0b;
+  color: #eee;
+  outline: none;
+}
 
-    button:active { transform: translateY(1px); }
+textarea {
+  min-height: 110px;
+  resize: vertical;
+}
 
-    .card {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      border: 1px solid #333;
-      border-radius: 16px;
-      background: #0b0b0b;
-    }
+button {
+  cursor: pointer;
+  font-weight: 600;
+  background: #161616;
+}
 
-    #msg, #updated {
-      font-size: 0.95rem;
-      opacity: 0.9;
-      word-break: break-word;
-    }
+button:active {
+  transform: translateY(1px);
+}
 
-    #live { white-space: pre-line; line-height: 1.45; }
-    hr { border: none; border-top: 1px solid #222; margin: 1rem 0; }
+/* --- Editor / toggle --- */
 
-    #toggleEdit {
-      width: auto;
-      display: inline-block;
-      padding: 0.4rem 0.9rem;
-      margin-bottom: 0.75rem;
-      border-radius: 999px;
-      font-size: 0.9rem;
-    }
+#toggleEdit {
+  width: auto;
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  margin-bottom: 0.75rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
 
-    #editor {
-      margin-bottom: 1rem;
-    }
+#editor {
+  margin-bottom: 1rem;
+}
 
-/* --- Page header with avatar --- */
+/* --- Card base --- */
+
+.card {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #333;
+  border-radius: 16px;
+  background: #0b0b0b;
+  position: relative; /* needed for pet in corner */
+}
+
+#msg,
+#updated {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  word-break: break-word;
+}
+
+#live {
+  white-space: pre-line;
+  line-height: 1.45;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #222;
+  margin: 1rem 0;
+}
+
+/* --- Page header with avatar (top of page) --- */
+
 .page-header {
   display: flex;
   align-items: center;
   gap: 1rem;
   margin-bottom: 1.25rem;
 }
+
+.title-wrap h1 {
+  margin: 0;
+}
+
+.title-wrap .meta {
+  margin: 0.1rem 0;
+}
+
+/* --- Avatar bubble (used in header + card) --- */
 
 .avatar-wrap {
   width: 56px;
@@ -87,18 +126,30 @@
   object-fit: cover;
 }
 
-.title-wrap h1 {
+/* Slightly smaller version inside the Live view card */
+.card-avatar {
+  width: 44px;
+  height: 44px;
+}
+
+/* --- Card header: avatar + Live view / updated --- */
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-header-text h3 {
   margin: 0;
 }
 
-.title-wrap .meta {
-  margin: 0.1rem 0;
+.card-header-text p {
+  margin: 0.15rem 0 0;
 }
 
-/* --- Card + pet corner --- */
-.card {
-  position: relative;
-}
+/* --- Pet in bottom-right corner of card --- */
 
 .pet-slot {
   position: absolute;
