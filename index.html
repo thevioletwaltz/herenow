@@ -24,7 +24,7 @@
 
     <div class="title-wrap">
       <h1>HereNow</h1>
-      <p class="meta">Version: 7.4 (images)</p>
+      <p class="meta">Version: 7.5 (pet work)</p>
       <p id="pageLabel" class="meta"></p>
     </div>
   </div>
@@ -32,14 +32,29 @@
   <button id="toggleEdit">Edit</button>
 
   <div id="editor">
+  <div class="field">
+    <label for="mood">Mood</label>
     <input id="mood" placeholder="Current mood" />
-    <input id="music" placeholder="Listening to" />
-    <input id="game" placeholder="Playing / watching" />
-    <textarea id="work" placeholder="Working on"></textarea>
-
-    <button id="save">Save</button>
-    <p id="msg"></p>
   </div>
+
+  <div class="field">
+    <label for="music">Music</label>
+    <input id="music" placeholder="Listening to" />
+  </div>
+
+  <div class="field">
+    <label for="game">Game / watching</label>
+    <input id="game" placeholder="Playing / watching" />
+  </div>
+
+  <div class="field">
+    <label for="work">Working on</label>
+    <textarea id="work" placeholder="Working on"></textarea>
+  </div>
+
+  <button id="save">Save</button>
+  <p id="msg"></p>
+</div>
 
   <!-- Live view card with avatar (top-left) and pet (bottom-right) -->
   <div class="card">
@@ -60,9 +75,9 @@
 
     <!-- Pet in bottom-right corner -->
     <div class="pet-slot">
-       <img id="petImg" src="cat.png" alt="Pet" />
+      <img id="petImg" src="cat.png" alt="Pet" />
+      <div class="pet-name">Nightcat</div>
     </div>
-  </div>
 
 
   <script>
