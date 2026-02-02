@@ -14,17 +14,16 @@
 
 <body>
   <!-- Top-of-page header with avatar + title -->
-  <div class="page-header">
-    <div class="avatar-wrap">
-      <img id="avatarImg" src="avatar.png" alt="User avatar" />
-    </div>
-
-    <div class="title-wrap">
-      <h1>HereNow</h1>
-      <p class="meta">Version # (pet list)</p>
-      <p id="pageLabel" class="meta"></p>
-    </div>
+  <div class="card-header">
+  <div class="avatar-wrap card-avatar">
+    <img src="avatar.png" alt="User avatar small" />
   </div>
+
+  <div class="card-header-text">
+    <h3 id="cardTitle" style="margin-top:0;"></h3>
+    <p id="updated"></p>
+  </div>
+</div>
 
   <!-- Edit toggle + editor -->
   <button id="toggleEdit">Edit</button>
@@ -131,11 +130,15 @@
       const pageLabelEl = document.getElementById("pageLabel");
       const toggleEditBtn = document.getElementById("toggleEdit");
       const editorEl = document.getElementById("editor");
+      const cardTitleEl = document.getElementById("cardTitle");
 
       const petImgEl = document.getElementById("petImg");
       const petNameDisplayEl = document.querySelector(".pet-name");
 
       pageLabelEl.innerText = `User: ${u}`;
+        if (cardTitleEl) {
+        cardTitleEl.innerText = u;
+        }
       msgEl.innerText = `Ready (page: ${u}).`;
 
       // --- Pet definitions ---
